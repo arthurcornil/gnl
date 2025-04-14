@@ -1,17 +1,21 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include "get_next_line.h"
+#include <string.h>
 
 int main(void)
 {
-	int fd = open("data", O_RDONLY);
+	//int fd = open("dummy", O_RDONLY);
 	char *line = NULL;
-
 	while (1)
 	{
-		line = get_next_line(fd);
+		line = get_next_line(1);
 		if (!line)
+		{
+			free(line);
 			break ;
-		printf("%s\n", line);
+		}
+		printf("%s", line);
+		free(line);
 	}
 }

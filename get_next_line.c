@@ -1,24 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: arcornil <arcornil@student.s19.be>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/11 11:59:25 by arcornil          #+#    #+#             */
+/*   Updated: 2025/04/14 08:12:17 by arcornil         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
-
-void	destroy_packet(t_packet *packet)
-{
-	if (packet->buffer)
-		free(packet->buffer);
-	if (packet)
-		free(packet);
-}
-
-void	destroy_packets(t_packet *packets)
-{
-	t_packet	*next_packet;
-	while (packets)
-	{
-		next_packet = packets->next;
-		destroy_packet(packets);
-		packets = next_packet;
-	}
-}
-
 
 t_packet	*get_last_packet(t_packet *packets)
 {
@@ -43,51 +35,42 @@ bool	found_new_line(t_packet *packets)
 	return (false);
 }
 
-void	append_packet(char *buffer, t_packet **packets)
+void	ft_lstadd_back(t_packet **lst, t_packet *new)
 {
-	t_packet *last_packet;
-	t_packet *new_packet;
+	t_packet	*p;
 
-	last_packet = get_last_packet(*packets);
-	new_packet = (t_packet *)malloc(sizeof(t_packet));
-	if (!new_packet)
+	if (!lst)
+		return ;
+	p = *lst;
+	if (!*lst)
 	{
-		destroy_packets(*packets);
-		*packets = NULL;
-		free(buffer);
+		*lst = new;
 		return ;
 	}
-	new_packet->buffer = buffer;
-	new_packet->next = NULL;
-	if (last_packet)
-		last_packet->next = new_packet;
-	else
-		*packets = new_packet;
+	while (p->next)
+		p = p->next;
+	p->next = new;
 }
 
 void	add_packets(t_packet **packets, int fd)
 {
-	char		*buffer;
 	ssize_t		chars_read;
+	t_packet	*new_packet;
 	
-	chars_read = 1;
 	while(!found_new_line(*packets))
 	{
-		buffer = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
-		if (!buffer)
-		{
-			destroy_packets(*packets);
-			*packets = NULL;
+		new_packet = (t_packet *)malloc(sizeof(t_packet));
+		if (!new_packet)
 			return ;
-		}
-		chars_read = read(fd, buffer, BUFFER_SIZE);
+		new_packet->next = NULL;
+		chars_read = read(fd, new_packet->buffer, BUFFER_SIZE);
 		if (chars_read <= 0)
 		{
-			free(buffer);
+			free(new_packet);
 			return ;
 		}
-		buffer[chars_read] = 0;
-		append_packet(buffer, packets);
+		new_packet->buffer[chars_read] = 0;
+		ft_lstadd_back(packets, new_packet);
 	}
 }
 
@@ -111,7 +94,10 @@ char	*packets_to_str(t_packet *packets)
 			strlen ++;
 		}
 		if (ptr->buffer[i] == '\n')
+		{
+			strlen ++;
 			break ;
+		}
 		ptr = ptr->next;
 	}
 	str = (char *)malloc(sizeof(char) * (strlen + 1));
@@ -129,7 +115,11 @@ char	*packets_to_str(t_packet *packets)
 			i ++;
 		}
 		if (ptr->buffer[j] == '\n')
+		{
+			str[i] = ptr->buffer[j];
+			i ++;
 			break ;
+		}
 		ptr = ptr->next;
 	}
 	str[i] = 0;
@@ -157,11 +147,21 @@ char	*ft_strdup(char *str)
 	return (new_str);
 }
 
+void	ft_strcpy(char dst[BUFFER_SIZE + 1], const char *src)
+{	
+	while (*src != 0)
+	{
+		*dst = *src;
+		dst ++;
+		src ++;
+	}
+	*dst = 0;
+}
+
 void	refresh_packets(t_packet **packets)
 {
 	t_packet	*ptr;
 	t_packet	*clean_packet;
-	char		*new_str;
 	int			i;
 
 	ptr = *packets;
@@ -172,13 +172,6 @@ void	refresh_packets(t_packet **packets)
 			i ++;
 		if (ptr->buffer[i] == '\n')
 		{
-			new_str = ft_strdup(ptr->buffer + i + 1);
-			if (!new_str)
-			{
-				destroy_packets(*packets);
-				*packets = NULL;
-				return ;
-			}
 			clean_packet = (t_packet *)malloc(sizeof(t_packet));
 			if (!clean_packet)
 			{
@@ -186,7 +179,7 @@ void	refresh_packets(t_packet **packets)
 				*packets = NULL;
 				return ;
 			}
-			clean_packet->buffer = new_str;
+			ft_strcpy(clean_packet->buffer, ptr->buffer + i + 1);
 			clean_packet->next = ptr->next;
 			destroy_packet(ptr);
 			*packets = clean_packet;
@@ -219,7 +212,7 @@ char	*get_next_line(int fd)
 		return (NULL);
 	}
 	refresh_packets(&packets);
-	if (!*curr_line)
+	if (!*curr_line && !packets)
 	{
 		destroy_packets(packets);
 		free(curr_line);
