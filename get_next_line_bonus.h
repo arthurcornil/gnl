@@ -5,13 +5,13 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: arcornil <arcornil@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/17 15:14:46 by arcornil          #+#    #+#             */
-/*   Updated: 2025/04/17 15:14:49 by arcornil         ###   ########.fr       */
+/*   Created: 2025/04/17 15:28:26 by arcornil          #+#    #+#             */
+/*   Updated: 2025/04/17 15:29:00 by arcornil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef GET_NEXT_LINE_H
-# define GET_NEXT_LINE_H
+#ifndef GET_NEXT_LINE_BONUS_H
+# define GET_NEXT_LINE_BONUS_H
 
 # define BUFFER_SIZE 1
 

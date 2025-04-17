@@ -6,7 +6,7 @@
 /*   By: arcornil <arcornil@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 15:14:01 by arcornil          #+#    #+#             */
-/*   Updated: 2025/04/17 15:14:04 by arcornil         ###   ########.fr       */
+/*   Updated: 2025/04/17 15:29:16 by arcornil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ char	*concat_packet(char *packet, char *str)
 	newstr = (char *)malloc(sizeof(char) * (packet_len + strlen + 1));
 	if (!newstr)
 		return (NULL);
-	ft_memset(newstr, 0, packet_len + strlen);
 	i = 0;
 	while (str && str[i])
 	{
