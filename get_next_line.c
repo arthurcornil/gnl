@@ -42,27 +42,27 @@ char	*concat_packet(char *packet, char *str)
 	return (newstr);
 }
 
-void	clean_packet(char *packets)
+void	clean_packet(char *packet)
 {
 	size_t	i;
 	size_t	j;
 
 	i = 0;
-	while (packets[i] && packets[i] != '\n')
+	while (packet[i] && packet[i] != '\n')
 		i ++;
-	if (!packets[i])
+	if (!packet[i])
 	{
-		ft_memset(packets, 0, i);
+		ft_memset(packet, 0, i);
 		return ;
 	}
 	i ++;
 	j = 0;
 	while (i < BUFFER_SIZE)
-		packets[j++] = packets[i++];
-	ft_memset(packets + j, 0, i - j);
+		packet[j++] = packet[i++];
+	ft_memset(packet + j, 0, i - j);
 }
 
-void	packets_to_str(char *packets, int fd, char **str)
+void	packets_to_str(char *packet, int fd, char **str)
 {
 	ssize_t	read_chars;
 	ssize_t	i;
@@ -70,17 +70,17 @@ void	packets_to_str(char *packets, int fd, char **str)
 
 	read_chars = 1;
 	j = 0;
-	while ((j == 0 || !found_nl(packets)) && read_chars > 0)
+	while ((j == 0 || !found_nl(packet)) && read_chars > 0)
 	{
 		i = 0;
-		while (j == 0 && packets[i])
+		while (j == 0 && packet[i])
 			i ++;
-		read_chars = read(fd, packets + i, BUFFER_SIZE - i);
-		if (read_chars < 0 || (read_chars == 0 && (*str || !*packets)))
+		read_chars = read(fd, packet + i, BUFFER_SIZE - i);
+		if (read_chars < 0 || (read_chars == 0 && (*str || !*packet)))
 			return ;
 		i += read_chars;
-		ft_memset(packets + i, 0, (size_t)(BUFFER_SIZE - i));
-		*str = concat_packet(packets, *str);
+		ft_memset(packet + i, 0, (size_t)(BUFFER_SIZE - i));
+		*str = concat_packet(packet, *str);
 		if (!*str)
 			return ;
 		j ++;
