@@ -7,4 +7,4 @@
 
 ## 🚀 Overview
 
-**get_next_line** is a C function designed to read input from a file descriptor one line at a time, returning each line with every call. It handles **buffered reading**, **memory allocation**, and supports reading from **multiple file descriptors simultaneously** (bonus part). This project is an excellent exercise in **file I/O**, **dynamic memory**, and **pointer logic**.
+**get_next_line** is a C function designed to read input from a file descriptor one line at a time, returning each line with every call. It handles **buffered reading**, **memory allocation**, and supports reading from **multiple file descriptors simultaneously** (bonus part).
