@@ -5,218 +5,97 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: arcornil <arcornil@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/14 10:38:06 by arcornil          #+#    #+#             */
-/*   Updated: 2025/04/14 10:38:16 by arcornil         ###   ########.fr       */
+/*   Created: 2025/04/17 15:14:01 by arcornil          #+#    #+#             */
+/*   Updated: 2025/04/17 15:14:04 by arcornil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-t_packet	*get_last_packet(t_packet *packets)
+char	*concat_packet(char *packet, char *str)
 {
-	while(packets && packets->next)
-		packets = packets->next;
-	return (packets);
-}
+	char	*newstr;
+	size_t	packet_len;
+	size_t	strlen;
+	size_t	i;
+	size_t	j;
 
-bool	found_new_line(t_packet *packets)
-{
-	t_packet	*last_packet;
-	int			i;
-
-	last_packet = get_last_packet(packets);
+	packet_len = ft_linelen(packet);
+	strlen = ft_linelen(str);
+	newstr = (char *)malloc(sizeof(char) * (packet_len + strlen + 1));
+	if (!newstr)
+		return (NULL);
+	ft_memset(newstr, 0, packet_len + strlen);
 	i = 0;
-	while (last_packet && last_packet->buffer[i])
+	while (str && str[i])
 	{
-		if (last_packet->buffer[i] == '\n')
-			return (true);
+		newstr[i] = str[i];
 		i ++;
 	}
-	return (false);
+	j = 0;
+	while (packet[j] && packet[j] != '\n')
+		newstr[i++] = packet[j++];
+	if (packet[j] == '\n')
+		newstr[i++] = packet[j];
+	newstr[i] = 0;
+	free(str);
+	return (newstr);
 }
 
-void	ft_lstadd_back(t_packet **lst, t_packet *new)
+void	clean_packet(char *packets)
 {
-	t_packet	*p;
+	size_t	i;
+	size_t	j;
 
-	if (!lst)
-		return ;
-	p = *lst;
-	if (!*lst)
-	{
-		*lst = new;
-		return ;
-	}
-	while (p->next)
-		p = p->next;
-	p->next = new;
-}
-
-void	add_packets(t_packet **packets, int fd)
-{
-	ssize_t		chars_read;
-	t_packet	*new_packet;
-	
-	while(!found_new_line(*packets))
-	{
-		new_packet = (t_packet *)malloc(sizeof(t_packet));
-		if (!new_packet)
-			return ;
-		new_packet->next = NULL;
-		chars_read = read(fd, new_packet->buffer, BUFFER_SIZE);
-		if (chars_read <= 0)
-		{
-			free(new_packet);
-			return ;
-		}
-		new_packet->buffer[chars_read] = 0;
-		ft_lstadd_back(packets, new_packet);
-	}
-}
-
-char	*packets_to_str(t_packet *packets)
-{
-	ssize_t		strlen;
-	t_packet	*ptr;
-	char		*str;
-	int			i;
-	int			j;
-
-	ptr = packets;
-	strlen = 0;
 	i = 0;
-	while (ptr)
+	while (packets[i] && packets[i] != '\n')
+		i ++;
+	if (!packets[i])
+	{
+		ft_memset(packets, 0, i);
+		return ;
+	}
+	i ++;
+	j = 0;
+	while (i < BUFFER_SIZE)
+		packets[j++] = packets[i++];
+	ft_memset(packets + j, 0, i - j);
+}
+
+void	packets_to_str(char *packets, int fd, char **str)
+{
+	ssize_t	read_chars;
+	ssize_t	i;
+	size_t	j;
+
+	read_chars = 1;
+	j = 0;
+	while ((j == 0 || !found_nl(packets)) && read_chars > 0)
 	{
 		i = 0;
-		while (ptr->buffer[i] && ptr->buffer[i] != '\n')
-		{
+		while (j == 0 && packets[i])
 			i ++;
-			strlen ++;
-		}
-		if (ptr->buffer[i] == '\n')
-		{
-			strlen ++;
-			break ;
-		}
-		ptr = ptr->next;
-	}
-	str = (char *)malloc(sizeof(char) * (strlen + 1));
-	if (!str)
-		return (NULL);
-	ptr = packets;
-	i = 0;
-	while (ptr)
-	{
-		j = 0;
-		while (ptr->buffer[j] && ptr->buffer[j] != '\n')
-		{
-			str[i] = ptr->buffer[j];
-			j ++;
-			i ++;
-		}
-		if (ptr->buffer[j] == '\n')
-		{
-			str[i] = ptr->buffer[j];
-			i ++;
-			break ;
-		}
-		ptr = ptr->next;
-	}
-	str[i] = 0;
-	return (str);
-}
-
-char	*ft_strdup(char *str)
-{
-	int		i;
-	char	*new_str;
-
-	i = 0;
-	while (str[i])
-		i ++;
-	new_str = (char *)malloc(sizeof(char) * (i + 1));
-	if (!new_str)
-		return (NULL);
-	i = 0;
-	while (str[i])
-	{
-		new_str[i] = str[i];
-		i ++;
-	}
-	new_str[i] = 0;
-	return (new_str);
-}
-
-void	ft_strcpy(char dst[BUFFER_SIZE + 1], const char *src)
-{	
-	while (*src != 0)
-	{
-		*dst = *src;
-		dst ++;
-		src ++;
-	}
-	*dst = 0;
-}
-
-void	refresh_packets(t_packet **packets)
-{
-	t_packet	*ptr;
-	t_packet	*clean_packet;
-	int			i;
-
-	ptr = *packets;
-	while (ptr)
-	{
-		i = 0;
-		while (ptr->buffer[i] && ptr->buffer[i] != '\n')
-			i ++;
-		if (ptr->buffer[i] == '\n')
-		{
-			clean_packet = (t_packet *)malloc(sizeof(t_packet));
-			if (!clean_packet)
-			{
-				destroy_packets(*packets);
-				*packets = NULL;
-				return ;
-			}
-			ft_strcpy(clean_packet->buffer, ptr->buffer + i + 1);
-			clean_packet->next = ptr->next;
-			destroy_packet(ptr);
-			*packets = clean_packet;
+		read_chars = read(fd, packets + i, BUFFER_SIZE - i);
+		if (read_chars < 0 || (read_chars == 0 && (*str || !*packets)))
 			return ;
-		}
-		clean_packet = ptr->next;
-		destroy_packet(ptr);
-		*packets = clean_packet;
-		ptr = clean_packet;
+		i += read_chars;
+		ft_memset(packets + i, 0, (size_t)(BUFFER_SIZE - i));
+		*str = concat_packet(packets, *str);
+		if (!*str)
+			return ;
+		j ++;
 	}
 }
 
 char	*get_next_line(int fd)
 {
-	static t_packet	*packets = NULL;
-	char			*curr_line;
+	char		*curr_line;
+	static char	packets[OPEN_MAX][BUFFER_SIZE];	
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, &curr_line, 0) < 0)
 		return (NULL);
-	add_packets(&packets, fd);
-	if (!packets)
-	{
-		destroy_packets(packets);
-		return (NULL);
-	}
-	curr_line = packets_to_str(packets);
-	if (!curr_line)
-	{
-		destroy_packets(packets);
-		return (NULL);
-	}
-	refresh_packets(&packets);
-	if (!*curr_line && !packets)
-	{
-		destroy_packets(packets);
-		free(curr_line);
-		curr_line = NULL;
-	}
+	curr_line = NULL;
+	packets_to_str(packets[fd], fd, &curr_line);
+	clean_packet(packets[fd]);
 	return (curr_line);
 }

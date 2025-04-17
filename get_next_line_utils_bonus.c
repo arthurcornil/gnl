@@ -5,27 +5,50 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: arcornil <arcornil@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/14 10:38:42 by arcornil          #+#    #+#             */
-/*   Updated: 2025/04/14 10:38:45 by arcornil         ###   ########.fr       */
+/*   Created: 2025/04/17 15:14:32 by arcornil          #+#    #+#             */
+/*   Updated: 2025/04/17 15:14:33 by arcornil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-void	destroy_packet(t_packet *packet)
+void	*ft_memset(void *b, int c, size_t len)
 {
-	if (packet)
-		free(packet);
-}
+	unsigned int	i;
+	unsigned char	*p;
 
-void	destroy_packets(t_packet *packets)
-{
-	t_packet	*next_packet;
-	while (packets)
+	p = (unsigned char *) b;
+	i = 0;
+	while (i < len)
 	{
-		next_packet = packets->next;
-		destroy_packet(packets);
-		packets = next_packet;
+		p[i] = (unsigned char) c;
+		i ++;
 	}
+	b = (void *) p;
+	return (b);
 }
 
+bool	found_nl(char *str)
+{
+	while (*str)
+	{
+		if (*str == '\n')
+			return (true);
+		str ++;
+	}
+	return (false);
+}
+
+size_t	ft_linelen(char *str)
+{
+	size_t	i;
+
+	i = 0;
+	if (str == NULL)
+		return (i);
+	while (str[i] && str[i] != '\n')
+		i ++;
+	if (str[i] == '\n')
+		i ++;
+	return (i);
+}

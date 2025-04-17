@@ -1,23 +1,28 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_bonus.h                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: arcornil <arcornil@student.s19.be>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/17 15:14:46 by arcornil          #+#    #+#             */
+/*   Updated: 2025/04/17 15:14:49 by arcornil         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 
-# ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 4
-# endif
+# define BUFFER_SIZE 1
 
 # include <unistd.h>
-# include <stddef.h>
-# include <stdbool.h>
+# include <limits.h>
 # include <stdlib.h>
-
-typedef struct s_packet
-{
-	char			buffer[BUFFER_SIZE + 1];
-	struct s_packet	*next;
-}	t_packet;
+# include <stdbool.h>
 
 char	*get_next_line(int fd);
-void	destroy_packet(t_packet *packet);
-void	destroy_packets(t_packet *packets);
+void	*ft_memset(void *b, int c, size_t len);
+bool	found_nl(char *str);
+size_t	ft_linelen(char *str);
 
 #endif
