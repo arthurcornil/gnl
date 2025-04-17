@@ -25,7 +25,6 @@ char	*concat_packet(char *packet, char *str)
 	newstr = (char *)malloc(sizeof(char) * (packet_len + strlen + 1));
 	if (!newstr)
 		return (NULL);
-	ft_memset(newstr, 0, packet_len + strlen);
 	i = 0;
 	while (str && str[i])
 	{
