@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: arcornil <arcornil@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/17 15:14:01 by arcornil          #+#    #+#             */
-/*   Updated: 2025/04/17 15:29:16 by arcornil         ###   ########.fr       */
+/*   Created: 2025/04/17 10:09:04 by arcornil          #+#    #+#             */
+/*   Updated: 2025/04/18 15:09:47 by arcornil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,27 +41,27 @@ char	*concat_packet(char *packet, char *str)
 	return (newstr);
 }
 
-void	clean_packet(char *packets)
+void	clean_packet(char *packet)
 {
 	size_t	i;
 	size_t	j;
 
 	i = 0;
-	while (packets[i] && packets[i] != '\n')
+	while (packet[i] && packet[i] != '\n')
 		i ++;
-	if (!packets[i])
+	if (!packet[i])
 	{
-		ft_memset(packets, 0, i);
+		ft_memset(packet, 0, (size_t)BUFFER_SIZE);
 		return ;
 	}
 	i ++;
 	j = 0;
 	while (i < BUFFER_SIZE)
-		packets[j++] = packets[i++];
-	ft_memset(packets + j, 0, i - j);
+		packet[j++] = packet[i++];
+	ft_memset(packet + j, 0, i - j);
 }
 
-void	packets_to_str(char *packets, int fd, char **str)
+bool	packets_to_str(char *packet, int fd, char **str)
 {
 	ssize_t	read_chars;
 	ssize_t	i;
@@ -69,32 +69,45 @@ void	packets_to_str(char *packets, int fd, char **str)
 
 	read_chars = 1;
 	j = 0;
-	while ((j == 0 || !found_nl(packets)) && read_chars > 0)
+	while ((j == 0 || !found_nl(packet)) && read_chars > 0)
 	{
 		i = 0;
-		while (j == 0 && packets[i])
+		while (j == 0 && packet[i])
 			i ++;
-		read_chars = read(fd, packets + i, BUFFER_SIZE - i);
-		if (read_chars < 0 || (read_chars == 0 && (*str || !*packets)))
-			return ;
+		read_chars = read(fd, packet + i, BUFFER_SIZE - i);
+		if (read_chars < 0 || (read_chars == 0 && (*str || !*packet)))
+			return (false);
 		i += read_chars;
-		ft_memset(packets + i, 0, (size_t)(BUFFER_SIZE - i));
-		*str = concat_packet(packets, *str);
+		ft_memset(packet + i, 0, (size_t)(BUFFER_SIZE - i));
+		*str = concat_packet(packet, *str);
 		if (!*str)
-			return ;
+			return (false);
 		j ++;
 	}
+	return (true);
 }
 
 char	*get_next_line(int fd)
 {
 	char		*curr_line;
-	static char	packets[OPEN_MAX][BUFFER_SIZE];	
+	static char	*packets[OPEN_MAX] = {NULL};	
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, &curr_line, 0) < 0)
 		return (NULL);
 	curr_line = NULL;
-	packets_to_str(packets[fd], fd, &curr_line);
-	clean_packet(packets[fd]);
+	if (!packets[fd])
+	{
+		packets[fd] = (char *)malloc(sizeof(char) * BUFFER_SIZE);
+		if (!packets[fd])
+			return (NULL);
+		ft_memset(packets[fd], 0, (size_t)BUFFER_SIZE);
+	}
+	if (!packets_to_str(packets[fd], fd, &curr_line))
+	{
+		free(packets[fd]);
+		packets[fd] = NULL;
+	}
+	if (packets[fd])
+		clean_packet(packets[fd]);
 	return (curr_line);
 }
