@@ -6,7 +6,7 @@
 /*   By: arcornil <arcornil@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/17 10:09:04 by arcornil          #+#    #+#             */
-/*   Updated: 2025/04/18 15:09:47 by arcornil         ###   ########.fr       */
+/*   Updated: 2025/05/01 17:09:39 by arcornil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,13 +72,14 @@ bool	packets_to_str(char *packet, int fd, char **str)
 	while ((j == 0 || !found_nl(packet)) && read_chars > 0)
 	{
 		i = 0;
-		while (j == 0 && packet[i])
-			i ++;
-		read_chars = read(fd, packet + i, BUFFER_SIZE - i);
-		if (read_chars < 0 || (read_chars == 0 && (*str || !*packet)))
-			return (false);
-		i += read_chars;
-		ft_memset(packet + i, 0, (size_t)(BUFFER_SIZE - i));
+		if (!(j == 0 && ft_linelen(packet)))
+		{
+			read_chars = read(fd, packet, BUFFER_SIZE);
+			if (read_chars < 0 || (read_chars == 0 && (*str || !*packet)))
+				return (false);
+			i += read_chars;
+			ft_memset(packet + i, 0, (size_t)(BUFFER_SIZE - i));
+		}
 		*str = concat_packet(packet, *str);
 		if (!*str)
 			return (false);
@@ -92,15 +93,16 @@ char	*get_next_line(int fd)
 	char		*curr_line;
 	static char	*packets[OPEN_MAX] = {NULL};	
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, &curr_line, 0) < 0)
+	if (fd < 0 || fd >= OPEN_MAX || BUFFER_SIZE <= 0
+		|| read(fd, &curr_line, 0) < 0)
 		return (NULL);
 	curr_line = NULL;
 	if (!packets[fd])
 	{
-		packets[fd] = (char *)malloc(sizeof(char) * BUFFER_SIZE);
+		packets[fd] = (char *)malloc(sizeof(char) * (BUFFER_SIZE + 1));
 		if (!packets[fd])
 			return (NULL);
-		ft_memset(packets[fd], 0, (size_t)BUFFER_SIZE);
+		ft_memset(packets[fd], 0, (sizeof(char) * (BUFFER_SIZE + 1)));
 	}
 	if (!packets_to_str(packets[fd], fd, &curr_line))
 	{

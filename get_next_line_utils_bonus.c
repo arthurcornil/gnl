@@ -44,11 +44,11 @@ size_t	ft_linelen(char *str)
 	size_t	i;
 
 	i = 0;
-	if (str == NULL)
+	if (!str)
 		return (i);
 	while (str[i] && str[i] != '\n')
 		i ++;
-	if (str[i] == '\n')
+	if (str[i] && str[i] == '\n')
 		i ++;
 	return (i);
 }
